@@ -140,10 +140,10 @@ class LiftSplatShoot(nn.Module):
         self.bx = nn.Parameter(bx, requires_grad=False)
         self.nx = nn.Parameter(nx, requires_grad=False)
 
-        self.downsample = 16
+        self.downsample = 16  # 图像到图像特征的下采样尺度
         self.camC = 64
-        self.frustum = self.create_frustum()
-        self.D, _, _, _ = self.frustum.shape
+        self.frustum = self.create_frustum()  # 构建 (D, fH, fW, 3) 形状的坐标 
+        self.D, _, _, _ = self.frustum.shape  # 获取 D 的维度大小
         self.camencode = CamEncode(self.D, self.camC, self.downsample)
         self.bevencode = BevEncode(inC=self.camC, outC=outC)
 
