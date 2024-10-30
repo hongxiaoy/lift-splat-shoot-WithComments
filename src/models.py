@@ -152,16 +152,16 @@ class LiftSplatShoot(nn.Module):
     
     def create_frustum(self):
         # make grid in image plane
-        ogfH, ogfW = self.data_aug_conf['final_dim']
-        fH, fW = ogfH // self.downsample, ogfW // self.downsample
-        ds = torch.arange(*self.grid_conf['dbound'], dtype=torch.float).view(-1, 1, 1).expand(-1, fH, fW)
-        D, _, _ = ds.shape
-        xs = torch.linspace(0, ogfW - 1, fW, dtype=torch.float).view(1, 1, fW).expand(D, fH, fW)
-        ys = torch.linspace(0, ogfH - 1, fH, dtype=torch.float).view(1, fH, 1).expand(D, fH, fW)
+        ogfH, ogfW = self.data_aug_conf['final_dim']  # 从数据增广配置字典中获取最终维度的图像高度和图像宽度
+        fH, fW = ogfH // self.downsample, ogfW // self.downsample  # 根据下采样率计算下采样后的图像高度和宽度
+        ds = torch.arange(*self.grid_conf['dbound'], dtype=torch.float).view(-1, 1, 1).expand(-1, fH, fW)  # 根据网格配置字典中深度范围生成一个线性间隔的张量，然后扩展为与图像特征相匹配的维度。
+        D, _, _ = ds.shape  # 深度值的数量
+        xs = torch.linspace(0, ogfW - 1, fW, dtype=torch.float).view(1, 1, fW).expand(D, fH, fW)  # 生成一个x轴维度的线性间隔的张量，表示从 0 到 ogfW - 1 的 fW 个点，然后扩展为与图像特征相匹配的维度
+        ys = torch.linspace(0, ogfH - 1, fH, dtype=torch.float).view(1, fH, 1).expand(D, fH, fW)  # 生成一个y轴维度的线性间隔的张量，表示从 0 到 ogfH - 1 的 fH 个点，然后扩展为与图像特征相匹配的维度
 
         # D x H x W x 3
-        frustum = torch.stack((xs, ys, ds), -1)
-        return nn.Parameter(frustum, requires_grad=False)
+        frustum = torch.stack((xs, ys, ds), -1)  # 沿着最后一个维度堆叠起来，形成一个形状为 (D, fH, fW, 3) 的四维张量。这个张量可以看作是三维空间中每个点的坐标集合。
+        return nn.Parameter(frustum, requires_grad=False)  # 在训练过程中不需要对这个张量进行梯度计算
 
     def get_geometry(self, rots, trans, intrins, post_rots, post_trans):
         """Determine the (x,y,z) locations (in the ego frame)
