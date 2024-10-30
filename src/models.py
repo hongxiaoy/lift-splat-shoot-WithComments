@@ -168,12 +168,12 @@ class LiftSplatShoot(nn.Module):
         of the points in the point cloud.
         Returns B x N x D x H/downsample x W/downsample x 3
         """
-        B, N, _ = trans.shape
+        B, N, _ = trans.shape  # 从多个相机的平移矩阵获取批大小和相机数量
 
-        # undo post-transformation
+        # undo post-transformation 撤销后处理变换
         # B x N x D x H x W x 3
-        points = self.frustum - post_trans.view(B, N, 1, 1, 1, 3)
-        points = torch.inverse(post_rots).view(B, N, 1, 1, 1, 3, 3).matmul(points.unsqueeze(-1))
+        points = self.frustum - post_trans.view(B, N, 1, 1, 1, 3)  # 将后处理平移矩阵扩展维度以适应视锥坐标，减去后处理平移向量
+        points = torch.inverse(post_rots).view(B, N, 1, 1, 1, 3, 3).matmul(points.unsqueeze(-1))  # 将后处理旋转矩阵求逆后扩展维度，撤销后处理旋转 R^(-1) @ (P_{now} - T)，B x N x D x H x W x 3 x 1
 
         # cam_to_ego
         points = torch.cat((points[:, :, :, :, :, :2] * points[:, :, :, :, :, 2:3],
