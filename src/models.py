@@ -35,26 +35,26 @@ class Up(nn.Module):
 
 
 class CamEncode(nn.Module):
-    def __init__(self, D, C, downsample):
+    def __init__(self, D, C, downsample):  # 从输入数据中提取特征，并特别关注于深度信息的提取
         super(CamEncode, self).__init__()
-        self.D = D
-        self.C = C
+        self.D = D  # 深度维度大小
+        self.C = C  # 特征维度大小
 
-        self.trunk = EfficientNet.from_pretrained("efficientnet-b0")
+        self.trunk = EfficientNet.from_pretrained("efficientnet-b0")  # 加载了一个预训练的 EfficientNet-B0 模型作为特征提取的主干网络
 
-        self.up1 = Up(320+112, 512)
-        self.depthnet = nn.Conv2d(512, self.D + self.C, kernel_size=1, padding=0)
+        self.up1 = Up(320+112, 512)  # 用于将不同分辨率的特征图进行上采样并拼接
+        self.depthnet = nn.Conv2d(512, self.D + self.C, kernel_size=1, padding=0)  # 从主干网络的输出中提取深度特征和其他特征
 
-    def get_depth_dist(self, x, eps=1e-20):
-        return x.softmax(dim=1)
+    def get_depth_dist(self, x, eps=1e-20):  # x 是深度特征图
+        return x.softmax(dim=1)  # 归一化，得到深度分布
 
-    def get_depth_feat(self, x):
-        x = self.get_eff_depth(x)
+    def get_depth_feat(self, x):  # x: B x N, C, imH, imW
+        x = self.get_eff_depth(x)  # 获取 EfficientNet 主干网络的输出特征图 [B x N, 512, imH_down, imW_down]
         # Depth
-        x = self.depthnet(x)
+        x = self.depthnet(x)  # 卷积层提取深度特征和其他特征 [B x N, D + C, imH_down, imW_down]
 
-        depth = self.get_depth_dist(x[:, :self.D])
-        new_x = depth.unsqueeze(1) * x[:, self.D:(self.D + self.C)].unsqueeze(2)
+        depth = self.get_depth_dist(x[:, :self.D])  # [B x N, D, imH_down, imW_down]
+        new_x = depth.unsqueeze(1) * x[:, self.D:(self.D + self.C)].unsqueeze(2)  # [B x N, 1, D, imH_down, imW_down] * [B x N, C, 1, imH_down, imW_down] = [B x N, C, D, imH_down, imW_down]
 
         return depth, new_x
 
