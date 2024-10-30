@@ -160,7 +160,7 @@ class LiftSplatShoot(nn.Module):
         ys = torch.linspace(0, ogfH - 1, fH, dtype=torch.float).view(1, fH, 1).expand(D, fH, fW)  # 生成一个y轴维度的线性间隔的张量，表示从 0 到 ogfH - 1 的 fH 个点，然后扩展为与图像特征相匹配的维度
 
         # D x H x W x 3
-        frustum = torch.stack((xs, ys, ds), -1)  # 沿着最后一个维度堆叠起来，形成一个形状为 (D, fH, fW, 3) 的四维张量。这个张量可以看作是三维空间中每个点的坐标集合。
+        frustum = torch.stack((xs, ys, ds), -1)  # 沿着最后一个维度堆叠起来，形成一个形状为 (D, fH, fW, 3) 的四维张量。这个张量可以看作是图像特征映射到原始图像后每个点的坐标集合。
         return nn.Parameter(frustum, requires_grad=False)  # 在训练过程中不需要对这个张量进行梯度计算
 
     def get_geometry(self, rots, trans, intrins, post_rots, post_trans):
