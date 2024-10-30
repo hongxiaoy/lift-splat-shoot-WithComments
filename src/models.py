@@ -188,10 +188,11 @@ class LiftSplatShoot(nn.Module):
     def get_cam_feats(self, x):
         """Return B x N x D x H/downsample x W/downsample x C
         """
-        B, N, C, imH, imW = x.shape
+        B, N, C, imH, imW = x.shape  # B 代表批次大小，N 代表相机的数量，C 代表通道数，imH 和 imW 分别代表图像的高度和宽度
 
-        x = x.view(B*N, C, imH, imW)
-        x = self.camencode(x)
+        x = x.view(B*N, C, imH, imW)  # 为了将批次中的每个图像视为独立的数据点，以便可以一次性处理整个批次的所有图像
+
+        x = self.camencode(x)  # 进行特征提取
         x = x.view(B, N, self.camC, self.D, imH//self.downsample, imW//self.downsample)
         x = x.permute(0, 1, 3, 4, 5, 2)
 
