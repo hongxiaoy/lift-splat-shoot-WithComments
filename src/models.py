@@ -243,8 +243,8 @@ class LiftSplatShoot(nn.Module):
         return final
 
     def get_voxels(self, x, rots, trans, intrins, post_rots, post_trans):
-        geom = self.get_geometry(rots, trans, intrins, post_rots, post_trans)
-        x = self.get_cam_feats(x)
+        geom = self.get_geometry(rots, trans, intrins, post_rots, post_trans)  # B x N x D x H/downsample x W/downsample x 3
+        x = self.get_cam_feats(x)  # B, N, self.D, imH//self.downsample, imW//self.downsample, self.camC,
 
         x = self.voxel_pooling(geom, x)
 
