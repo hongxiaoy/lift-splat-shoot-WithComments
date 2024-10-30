@@ -178,8 +178,8 @@ class LiftSplatShoot(nn.Module):
         # cam_to_ego
         points = torch.cat((points[:, :, :, :, :, :2] * points[:, :, :, :, :, 2:3],
                             points[:, :, :, :, :, 2:3]
-                            ), 5)
-        combine = rots.matmul(torch.inverse(intrins))
+                            ), 5)  # P_{im} = K @ P_{cam} * 1/z, P_{im} * z = K @ P_{cam}
+        combine = rots.matmul(torch.inverse(intrins))  # (R @ P_{cam} + T = P_{ego}
         points = combine.view(B, N, 1, 1, 1, 3, 3).matmul(points).squeeze(-1)
         points += trans.view(B, N, 1, 1, 1, 3)
 
